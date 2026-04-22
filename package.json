@@ -1,0 +1,44 @@
+{
+  "name": "docx2pdf-cli",
+  "version": "1.0.0",
+  "description": "Convert .docx files to PDF via LibreOffice headless — no cloud, no account, CJK-friendly.",
+  "keywords": [
+    "docx",
+    "pdf",
+    "convert",
+    "libreoffice",
+    "cli",
+    "cjk",
+    "chinese"
+  ],
+  "license": "MIT",
+  "author": "luoxiongbo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/luoxiongbo/word2pdf"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "bin": {
+    "docx2pdf": "./bin/docx2pdf.js"
+  },
+  "main": "./lib/converter.js",
+  "files": [
+    "bin/",
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node test/test.js",
+    "lint": "eslint bin/ lib/"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "docx": "^9.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0"
+  }
+}

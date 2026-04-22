@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+.venv-*/
+
+# Build / temp
+*.tmp
+*.temp
+tmp/
+.cache/
+
+# Generated conversion outputs
+*.pdf
+
+# Optional local test artifacts
+*.log
