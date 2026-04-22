@@ -6,7 +6,7 @@
 
 关键词：`word-to-pdf`、`docx-to-pdf`、`Word 转 PDF`、`WPS 转 PDF`
 
-仓库地址：[https://github.com/luoxiongbo/word2pdf](https://github.com/luoxiongbo/word2pdf)
+仓库地址：[https://github.com/luoxiongbo/word-to-pdf](https://github.com/luoxiongbo/word-to-pdf)
 
 - 不上传云端
 - 不依赖付费 SaaS

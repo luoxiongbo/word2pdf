@@ -15,7 +15,7 @@
   "author": "luoxiongbo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/luoxiongbo/word2pdf"
+    "url": "https://github.com/luoxiongbo/word-to-pdf"
   },
   "engines": {
     "node": ">=16"

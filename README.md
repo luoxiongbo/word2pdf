@@ -6,7 +6,7 @@ A local, open-source Word-to-PDF conversion toolkit focused on Chinese document 
 
 Keywords: `word-to-pdf`, `docx-to-pdf`, `word to pdf converter`, `wps to pdf`
 
-Repository: https://github.com/luoxiongbo/word2pdf
+Repository: https://github.com/luoxiongbo/word-to-pdf
 
 - No cloud upload
 - No paid SaaS dependency
