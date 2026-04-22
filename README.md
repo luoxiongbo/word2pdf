@@ -1,5 +1,7 @@
 # DocForge Convert (word2pdf)
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 A local, open-source Word-to-PDF conversion toolkit focused on Chinese document workflows and WPS-origin templates.
 
 Repository: https://github.com/luoxiongbo/word2pdf
@@ -53,6 +55,7 @@ This project provides two practical paths:
 ├── SECURITY.md
 ├── requirements.txt              # Python deps for web mode
 ├── package.json                  # Node package metadata
+├── README.zh-CN.md               # Chinese documentation
 └── README.md
 ```
 
