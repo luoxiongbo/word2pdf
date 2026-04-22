@@ -1,4 +1,4 @@
-# Images
+# Word-to-PDF Images
 
 Place project screenshots in this directory.
 

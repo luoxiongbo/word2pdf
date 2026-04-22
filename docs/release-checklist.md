@@ -1,4 +1,4 @@
-# Open-Source Release Checklist
+# Word-to-PDF Open-Source Release Checklist
 
 Use this before pushing to GitHub public repository.
 

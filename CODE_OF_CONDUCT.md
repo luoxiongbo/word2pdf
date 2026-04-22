@@ -1,4 +1,4 @@
-# Code of Conduct
+# Code of Conduct (Word-to-PDF Project)
 
 ## Our Pledge
 

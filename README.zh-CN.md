@@ -1,8 +1,10 @@
-# DocForge Convert (word2pdf)
+# Word-to-PDF 转换器（word2pdf）| DOCX 转 PDF
 
 [English](README.md) | 简体中文
 
 一个本地化、开源的 Word 转 PDF 工具，重点面向中文文档场景与 WPS 来源文档的兼容转换。
+
+关键词：`word-to-pdf`、`docx-to-pdf`、`Word 转 PDF`、`WPS 转 PDF`
 
 仓库地址：[https://github.com/luoxiongbo/word2pdf](https://github.com/luoxiongbo/word2pdf)
 

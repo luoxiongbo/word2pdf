@@ -1,4 +1,4 @@
-# Security Policy
+# Security Policy (Word-to-PDF Project)
 
 ## Supported Versions
 

@@ -1,8 +1,10 @@
-# DocForge Convert (word2pdf)
+# Word-to-PDF Converter (word2pdf) | DOCX-to-PDF
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 A local, open-source Word-to-PDF conversion toolkit focused on Chinese document workflows and WPS-origin templates.
+
+Keywords: `word-to-pdf`, `docx-to-pdf`, `word to pdf converter`, `wps to pdf`
 
 Repository: https://github.com/luoxiongbo/word2pdf
 

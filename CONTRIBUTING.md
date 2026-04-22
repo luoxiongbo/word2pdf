@@ -1,4 +1,4 @@
-# Contributing Guide
+# Contributing Guide (Word-to-PDF)
 
 Thanks for your interest in improving this project.
 
