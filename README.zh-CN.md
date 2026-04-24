@@ -149,6 +149,18 @@ python3 pdf_to_word.py "/path/to/your-generated.pdf" -o "/path/to/restored.docx"
 
 只有在你需要强制对外部 PDF 做结构分析时，才使用 `--no-embedded-restore`。
 
+严格 1:1 模式（做不到精确还原就直接失败）：
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --strict-1to1
+```
+
+手动指定原始 DOCX 做精确还原：
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --source-docx "/path/to/original.docx"
+```
+
 ## Web API
 
 ### `POST /convert`

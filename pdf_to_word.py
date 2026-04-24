@@ -15,6 +15,7 @@ Usage:
 import argparse
 import io
 import re
+import shutil
 import statistics
 from dataclasses import dataclass
 from pathlib import Path
@@ -35,6 +36,17 @@ except ImportError:
     Pt = None
 
 BULLET_RE = re.compile(r"^\s*(?:[•●▪■\-–—]|\d+[.)]|[（(]\d+[)）]|[A-Za-z][.)])\s+")
+
+KNOWN_PDF_OUTPUT_SUFFIXES = [
+    ".converter_from_downloads.inlinefix.web",
+    ".converter_from_downloads.inlinefix.direct",
+    ".converter_from_downloads.retest",
+    ".converter_from_downloads.retest_direct",
+    ".node_cli.check",
+    ".native.smoke",
+    ".native.debug",
+    ".libreoffice.smoke",
+]
 
 
 @dataclass
@@ -457,17 +469,128 @@ def _restore_embedded_source_docx(pdf_path: Path, output_docx: Path) -> bool:
         pdf.close()
 
 
-def pdf_to_docx(input_pdf: Path, output_docx: Path, keep_page_breaks: bool = True, prefer_embedded_source: bool = True) -> str:
+def _looks_like_docx(path: Path) -> bool:
+    try:
+        if not path.exists() or not path.is_file() or path.suffix.lower() != ".docx":
+            return False
+        head = path.read_bytes()[:4]
+        return head.startswith(b"PK")
+    except Exception:
+        return False
+
+
+def _candidate_sidecar_docx_paths(pdf_path: Path) -> list[Path]:
+    parent = pdf_path.parent
+    stem = pdf_path.stem
+
+    candidates: list[Path] = []
+
+    def add_base(base: str):
+        base = (base or "").strip()
+        if not base:
+            return
+        candidates.append(parent / f"{base}.docx")
+
+    # 1) direct same-name candidate.
+    add_base(stem)
+
+    # 2) known generated suffixes.
+    for suffix in KNOWN_PDF_OUTPUT_SUFFIXES:
+        if stem.endswith(suffix):
+            add_base(stem[: -len(suffix)])
+
+    # 3) generic progressive trimming by dotted segments.
+    parts = stem.split(".")
+    for cut in range(len(parts) - 1, 0, -1):
+        add_base(".".join(parts[:cut]))
+
+    # stable dedupe
+    seen = set()
+    unique = []
+    for c in candidates:
+        key = str(c)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(c)
+    return unique
+
+
+def _restore_sidecar_source_docx(pdf_path: Path, output_docx: Path) -> Path | None:
+    pdf_mtime = pdf_path.stat().st_mtime
+
+    for cand in _candidate_sidecar_docx_paths(pdf_path):
+        if not _looks_like_docx(cand):
+            continue
+
+        # Avoid obvious false positives where candidate is created later than PDF.
+        try:
+            if cand.stat().st_mtime > pdf_mtime + 5:
+                continue
+        except Exception:
+            pass
+
+        try:
+            if output_docx.resolve() == cand.resolve():
+                return cand
+        except Exception:
+            pass
+
+        output_docx.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(cand, output_docx)
+        return cand
+
+    return None
+
+
+def _restore_explicit_source_docx(source_docx: Path, output_docx: Path) -> bool:
+    if not _looks_like_docx(source_docx):
+        return False
+    try:
+        if output_docx.resolve() == source_docx.resolve():
+            return True
+    except Exception:
+        pass
+    output_docx.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source_docx, output_docx)
+    return True
+
+
+def pdf_to_docx(
+    input_pdf: Path,
+    output_docx: Path,
+    keep_page_breaks: bool = True,
+    prefer_embedded_source: bool = True,
+    prefer_sidecar_source: bool = True,
+    explicit_source_docx: Path | None = None,
+    strict_1to1: bool = False,
+) -> str:
     """Convert PDF to DOCX.
 
     Returns:
-      "exact" if restored from embedded source DOCX,
+      "exact-explicit" if restored from explicit source DOCX path,
+      "exact-embedded" if restored from embedded source DOCX,
+      "exact-sidecar" if restored from sidecar DOCX near PDF,
       "analyzed" for structured text/image extraction.
     """
     _ensure_dependencies()
 
+    if explicit_source_docx and _restore_explicit_source_docx(explicit_source_docx, output_docx):
+        return "exact-explicit"
+
     if prefer_embedded_source and _restore_embedded_source_docx(input_pdf, output_docx):
-        return "exact"
+        return "exact-embedded"
+
+    if prefer_sidecar_source:
+        sidecar = _restore_sidecar_source_docx(input_pdf, output_docx)
+        if sidecar is not None:
+            return "exact-sidecar"
+
+    if strict_1to1:
+        raise RuntimeError(
+            "Exact 1:1 restore unavailable. "
+            "No embedded source DOCX and no usable sidecar source DOCX found."
+        )
 
     doc = Document()
     pdf = fitz.open(str(input_pdf))
@@ -525,7 +648,17 @@ def _build_output_path(input_file: Path, output: Path | None):
     return output
 
 
-def convert_single(input_file: Path, output: Path | None, overwrite: bool, keep_page_breaks: bool, prefer_embedded_source: bool, silent: bool):
+def convert_single(
+    input_file: Path,
+    output: Path | None,
+    overwrite: bool,
+    keep_page_breaks: bool,
+    prefer_embedded_source: bool,
+    prefer_sidecar_source: bool,
+    explicit_source_docx: Path | None,
+    strict_1to1: bool,
+    silent: bool,
+):
     out = _build_output_path(input_file, output)
 
     if out.exists() and not overwrite:
@@ -539,10 +672,17 @@ def convert_single(input_file: Path, output: Path | None, overwrite: bool, keep_
             out,
             keep_page_breaks=keep_page_breaks,
             prefer_embedded_source=prefer_embedded_source,
+            prefer_sidecar_source=prefer_sidecar_source,
+            explicit_source_docx=explicit_source_docx,
+            strict_1to1=strict_1to1,
         )
         if not silent:
-            if mode == "exact":
+            if mode == "exact-explicit":
+                print(f"[ok] {input_file.name} -> {out} (exact restore from explicit source)")
+            elif mode == "exact-embedded":
                 print(f"[ok] {input_file.name} -> {out} (exact restore from embedded source)")
+            elif mode == "exact-sidecar":
+                print(f"[ok] {input_file.name} -> {out} (exact restore from sidecar source)")
             else:
                 print(f"[ok] {input_file.name} -> {out} (structured analysis)")
         return True
@@ -552,7 +692,16 @@ def convert_single(input_file: Path, output: Path | None, overwrite: bool, keep_
         return False
 
 
-def convert_dir(input_dir: Path, output_dir: Path | None, overwrite: bool, keep_page_breaks: bool, prefer_embedded_source: bool, silent: bool):
+def convert_dir(
+    input_dir: Path,
+    output_dir: Path | None,
+    overwrite: bool,
+    keep_page_breaks: bool,
+    prefer_embedded_source: bool,
+    prefer_sidecar_source: bool,
+    strict_1to1: bool,
+    silent: bool,
+):
     if output_dir is not None and output_dir.suffix.lower() == ".docx":
         raise ValueError("For directory input, --output must be a directory path, not a .docx file")
 
@@ -573,7 +722,10 @@ def convert_dir(input_dir: Path, output_dir: Path | None, overwrite: bool, keep_
             overwrite,
             keep_page_breaks,
             prefer_embedded_source,
-            silent,
+            prefer_sidecar_source,
+            explicit_source_docx=None,
+            strict_1to1=strict_1to1,
+            silent=silent,
         )
         if result:
             ok += 1
@@ -600,6 +752,20 @@ def parse_args():
         action="store_true",
         help="disable embedded source DOCX restore and always run structured analysis",
     )
+    parser.add_argument(
+        "--no-sidecar-restore",
+        action="store_true",
+        help="disable same-directory sidecar DOCX restore",
+    )
+    parser.add_argument(
+        "--source-docx",
+        help="explicit source .docx path for exact restore",
+    )
+    parser.add_argument(
+        "--strict-1to1",
+        action="store_true",
+        help="fail if exact restore is unavailable; do not output analyzed approximation",
+    )
     parser.add_argument("--silent", action="store_true", help="suppress non-error logs")
     return parser.parse_args()
 
@@ -615,14 +781,26 @@ def main():
 
     keep_page_breaks = not args.no_page_breaks
     prefer_embedded_source = not args.no_embedded_restore
+    prefer_sidecar_source = not args.no_sidecar_restore
+    explicit_source_docx = Path(args.source_docx).expanduser().resolve() if args.source_docx else None
+    strict_1to1 = bool(args.strict_1to1)
+
+    if explicit_source_docx and (not explicit_source_docx.exists() or explicit_source_docx.suffix.lower() != ".docx"):
+        print("[error] --source-docx must point to an existing .docx file")
+        return 1
 
     if input_path.is_dir():
+        if explicit_source_docx is not None:
+            print("[error] --source-docx is only supported for single PDF input")
+            return 1
         ok, fail = convert_dir(
             input_path,
             output_path,
             overwrite=args.overwrite,
             keep_page_breaks=keep_page_breaks,
             prefer_embedded_source=prefer_embedded_source,
+            prefer_sidecar_source=prefer_sidecar_source,
+            strict_1to1=strict_1to1,
             silent=args.silent,
         )
         if not args.silent:
@@ -639,6 +817,9 @@ def main():
         overwrite=args.overwrite,
         keep_page_breaks=keep_page_breaks,
         prefer_embedded_source=prefer_embedded_source,
+        prefer_sidecar_source=prefer_sidecar_source,
+        explicit_source_docx=explicit_source_docx,
+        strict_1to1=strict_1to1,
         silent=args.silent,
     )
     return 0 if success else 1

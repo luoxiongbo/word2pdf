@@ -92,6 +92,26 @@ python3 pdf_to_word.py \
   --no-embedded-restore
 ```
 
+Strict 1:1 mode (fail if exact restore is unavailable):
+
+```bash
+python3 pdf_to_word.py \
+  "/absolute/path/input.pdf" \
+  -o "/absolute/path/output.docx" \
+  --overwrite \
+  --strict-1to1
+```
+
+Explicit source DOCX for exact restore:
+
+```bash
+python3 pdf_to_word.py \
+  "/absolute/path/input.pdf" \
+  -o "/absolute/path/output.docx" \
+  --overwrite \
+  --source-docx "/absolute/path/original.docx"
+```
+
 ## 8. Troubleshooting
 
 ### Symptom: textbox overlap in output

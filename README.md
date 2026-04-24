@@ -149,6 +149,18 @@ python3 pdf_to_word.py "/path/to/your-generated.pdf" -o "/path/to/restored.docx"
 
 Use `--no-embedded-restore` only when you want to force structure analysis on generic external PDFs.
 
+Strict 1:1 mode (fail fast if exact restore is not available):
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --strict-1to1
+```
+
+Explicit source DOCX for exact restore:
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --source-docx "/path/to/original.docx"
+```
+
 ## Web API
 
 ### `POST /convert`
