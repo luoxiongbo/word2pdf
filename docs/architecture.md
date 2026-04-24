@@ -1,6 +1,7 @@
 # Word-to-PDF Architecture Overview
 
 This project has two independent conversion interfaces that share a common mission: local DOCX-to-PDF conversion.
+It also includes a standalone local PDF-to-DOCX conversion script.
 
 ## 1) Web Converter Path
 
@@ -32,6 +33,17 @@ Core modules:
 Modes:
 - `--engine libreoffice`: DOCX -> LibreOffice -> PDF
 - `--engine native`: DOCX XML parsing -> HTML/PDF rendering strategy
+
+## 3) PDF -> DOCX Path
+
+Entry:
+- `pdf_to_word.py`
+
+Pipeline:
+1. Read PDF pages with PyMuPDF (`fitz`)
+2. Extract text blocks in reading order
+3. Write paragraphs to `.docx` via `python-docx`
+4. Attempt to embed image blocks when decodable
 
 ## Design Notes
 

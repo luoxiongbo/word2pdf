@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - GitHub issue/PR templates
 - Architecture and release-checklist docs
 - Screenshot placeholder path under `docs/images/`
+- `pdf_to_word.py` local PDF-to-Word converter (PyMuPDF + python-docx)
 
 ### Changed
 - README restructured for public GitHub usage

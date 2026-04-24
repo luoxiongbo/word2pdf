@@ -12,6 +12,7 @@ Repository: https://github.com/luoxiongbo/word-to-pdf
 - No paid SaaS dependency
 - Supports Web UI and CLI
 - Includes WPS text-box overlap compatibility fixes (Web mode)
+- Includes a local PDF-to-Word (`.pdf -> .docx`) utility
 
 ## Why this project
 
@@ -52,6 +53,7 @@ This project provides two practical paths:
 │   └── images/
 │       └── README.md             # Screenshot location / placeholder
 ├── converter_from_downloads.py   # Web converter + embedded frontend
+├── pdf_to_word.py                # PDF -> Word converter (Python CLI)
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
@@ -119,6 +121,20 @@ node bin/docx2pdf.js \
   "/path/to/docx-dir" \
   -o "/path/to/output-dir" \
   --overwrite
+```
+
+### Option C: PDF to Word (Python CLI)
+
+Single file:
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite
+```
+
+Batch directory:
+
+```bash
+python3 pdf_to_word.py "/path/to/pdf-dir" -o "/path/to/docx-dir" --overwrite
 ```
 
 ## Web API

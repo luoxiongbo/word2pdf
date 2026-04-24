@@ -12,6 +12,7 @@
 - 不依赖付费 SaaS
 - 同时支持 Web 页面和 Node CLI
 - Web 模式内置 WPS 文本框重叠修复逻辑
+- 新增本地 `PDF -> Word (.docx)` 转换脚本
 
 ## 为什么做这个项目
 
@@ -53,6 +54,7 @@
 │   └── images/
 │       └── README.md             # 截图目录说明
 ├── converter_from_downloads.py   # Web 转换器 + 内嵌前端
+├── pdf_to_word.py                # PDF -> Word 转换脚本（Python CLI）
 ├── CONTRIBUTING.md
 ├── CODE_OF_CONDUCT.md
 ├── SECURITY.md
@@ -119,6 +121,20 @@ node bin/docx2pdf.js \
   "/path/to/docx-dir" \
   -o "/path/to/output-dir" \
   --overwrite
+```
+
+### 方案 C：PDF 转 Word（Python CLI）
+
+单文件转换：
+
+```bash
+python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite
+```
+
+目录批量转换：
+
+```bash
+python3 pdf_to_word.py "/path/to/pdf-dir" -o "/path/to/docx-dir" --overwrite
 ```
 
 ## Web API

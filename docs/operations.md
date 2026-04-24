@@ -62,7 +62,27 @@ node bin/docx2pdf.js \
 npm test
 ```
 
-## 7. Troubleshooting
+## 7. PDF to Word (Python CLI)
+
+Single file:
+
+```bash
+python3 pdf_to_word.py \
+  "/absolute/path/input.pdf" \
+  -o "/absolute/path/output.docx" \
+  --overwrite
+```
+
+Batch directory:
+
+```bash
+python3 pdf_to_word.py \
+  "/absolute/path/pdf-dir" \
+  -o "/absolute/path/docx-dir" \
+  --overwrite
+```
+
+## 8. Troubleshooting
 
 ### Symptom: textbox overlap in output
 
