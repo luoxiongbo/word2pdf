@@ -1,18 +1,15 @@
-# Changelog (Word-to-PDF)
+# Changelog (Word-to-PDF & PDF-to-Word)
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are listed here.
 
 ## [Unreleased]
 
 ### Added
-- Open-source documentation baseline (`CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY`)
-- GitHub issue/PR templates
-- Architecture and release-checklist docs
-- Screenshot placeholder path under `docs/images/`
-- `pdf_to_word.py` local PDF-to-Word converter (PyMuPDF + python-docx)
-- Structured PDF analysis for heading/body/list/indent/spacing reconstruction
-- Embedded source DOCX in Web Word->PDF output for exact round-trip restore
+- Web Word->PDF path with WPS-focused preprocessing (`converter_from_downloads.py`)
+- Node CLI Word->PDF path (`bin/docx2pdf.js`, `lib/*`)
+- Python CLI PDF->Word path (`pdf_to_word.py`)
+- Structured PDF analysis for heading/list/indent/spacing reconstruction
+- Exact restore flow via embedded/sidecar/explicit source DOCX
 
 ### Changed
-- README restructured for public GitHub usage
-- Operations documentation expanded
+- README and docs rewritten for concise, search-friendly usage

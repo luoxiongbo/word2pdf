@@ -1,111 +1,53 @@
-# Word-to-PDF Converter (word2pdf) | DOCX-to-PDF
+# Word-to-PDF & PDF-to-Word Converter (word-to-pdf)
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-A local, open-source Word-to-PDF conversion toolkit focused on Chinese document workflows and WPS-origin templates.
+Local, open-source document conversion toolkit:
+- `Word -> PDF` (`.doc/.docx -> .pdf`)
+- `PDF -> Word` (`.pdf -> .docx`)
 
-Keywords: `word-to-pdf`, `docx-to-pdf`, `word to pdf converter`, `wps to pdf`
+Keywords: `word-to-pdf`, `pdf-to-word`, `docx-to-pdf`, `pdf-to-docx`, `wps-to-pdf`, `word-to-pdf converter`
 
-Repository: https://github.com/luoxiongbo/word-to-pdf
+Repository: [https://github.com/luoxiongbo/word-to-pdf](https://github.com/luoxiongbo/word-to-pdf)
 
-- No cloud upload
-- No paid SaaS dependency
-- Supports Web UI and CLI
-- Includes WPS text-box overlap compatibility fixes (Web mode)
-- Includes a local PDF-to-Word (`.pdf -> .docx`) utility
+## Features
 
-## Why this project
+- Fully local processing (no cloud upload)
+- Web Word-to-PDF converter with WPS textbox overlap fixes
+- Node CLI Word-to-PDF converter for scripts/automation
+- Python CLI PDF-to-Word converter with structure analysis
+- Exact round-trip restore support for generated PDFs (when source DOCX is available)
 
-Many `.docx` files (especially from WPS/Office mixed workflows) can produce layout issues when converted with generic tools.
-This project provides two practical paths:
+## Tools
 
-1. `Web Converter (Python + LibreOffice)`
-- Best for interactive use
-- Includes stronger preprocessing for WPS text-box overlap issues
-
-2. `Node CLI`
-- Best for automation and batch jobs
-- Easier integration into scripts/CI
-
-## Feature Matrix
-
-| Capability | Web Converter (`converter_from_downloads.py`) | Node CLI (`bin/docx2pdf.js`) |
-|---|---|---|
-| Local conversion | Yes | Yes |
-| LibreOffice backend | Yes | Yes (`--engine libreoffice`) |
-| Built-in non-LO rendering path | No | Yes (`--engine native`) |
-| WPS textbox overlap preprocessing | Stronger (anchor + inline textbox handling) | Basic (`lineRule` normalization) |
-| Batch directory conversion | API loop / custom scripts | Native support |
-| Browser upload/download UI | Yes | No |
-
-## Project Structure
-
-```text
-.
-├── bin/                          # Node CLI entry
-├── lib/                          # Node conversion core modules
-├── scripts/                      # Helper scripts
-├── test/                         # Node smoke tests
-├── docs/
-│   ├── architecture.md           # Architecture and module responsibilities
-│   ├── operations.md             # Daily operations and troubleshooting
-│   ├── release-checklist.md      # Open-source release checklist
-│   └── images/
-│       └── README.md             # Screenshot location / placeholder
-├── converter_from_downloads.py   # Web converter + embedded frontend
-├── pdf_to_word.py                # PDF -> Word converter (Python CLI)
-├── CONTRIBUTING.md
-├── CODE_OF_CONDUCT.md
-├── SECURITY.md
-├── requirements.txt              # Python deps for web mode
-├── package.json                  # Node package metadata
-├── README.zh-CN.md               # Chinese documentation
-└── README.md
-```
+| Tool | Direction | Entry | Best for |
+|---|---|---|---|
+| Web converter | Word -> PDF | `converter_from_downloads.py` | Interactive conversion, WPS-heavy docs |
+| Node CLI | Word -> PDF | `bin/docx2pdf.js` | Batch/automation/CI |
+| Python CLI | PDF -> Word | `pdf_to_word.py` | PDF back-conversion |
 
 ## Quick Start
 
-### Option A: Web Converter (Recommended for layout-sensitive docs)
-
-Prerequisites:
-- macOS/Linux
-- LibreOffice installed
-- Python 3.10+
-
-Install dependencies:
+### 1) Install dependencies
 
 ```bash
+# Node deps
+npm install
+
+# Python deps
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Run server:
+### 2) Word -> PDF (Web)
 
 ```bash
 python3 converter_from_downloads.py
+# open http://localhost:5000
 ```
 
-Open:
-
-```text
-http://localhost:5000
-```
-
-### Option B: Node CLI
-
-Prerequisites:
-- Node.js >= 16
-- LibreOffice (for `--engine libreoffice`)
-- Optional Chrome/Chromium (for `--engine native`)
-
-Install:
-
-```bash
-npm install
-```
-
-Single file conversion:
+### 3) Word -> PDF (Node CLI)
 
 ```bash
 node bin/docx2pdf.js \
@@ -114,131 +56,79 @@ node bin/docx2pdf.js \
   --overwrite
 ```
 
-Batch conversion:
+### 4) PDF -> Word (Python CLI)
 
 ```bash
-node bin/docx2pdf.js \
-  "/path/to/docx-dir" \
-  -o "/path/to/output-dir" \
+python3 pdf_to_word.py \
+  "/path/to/input.pdf" \
+  -o "/path/to/output.docx" \
   --overwrite
 ```
 
-### Option C: PDF to Word (Python CLI)
+## Exact 1:1 Restore Rules
 
-Single file:
+`pdf_to_word.py` exact restore order:
+1. `--source-docx` explicit source path
+2. Embedded source DOCX in PDF attachment
+3. Sidecar DOCX in same directory (name matching)
+4. Fallback to structured analysis
 
-```bash
-python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite
-```
-
-Batch directory:
-
-```bash
-python3 pdf_to_word.py "/path/to/pdf-dir" -o "/path/to/docx-dir" --overwrite
-```
-
-### Round-Trip Fidelity (Word -> PDF -> Word)
-
-For PDFs generated by this project Web converter (`converter_from_downloads.py`), the original source `.docx` is embedded into the PDF.
-
-That means `pdf_to_word.py` can restore the embedded source directly for near 1:1 format fidelity:
+Strict mode (do not allow fallback):
 
 ```bash
-python3 pdf_to_word.py "/path/to/your-generated.pdf" -o "/path/to/restored.docx" --overwrite
+python3 pdf_to_word.py \
+  "/path/to/input.pdf" \
+  -o "/path/to/output.docx" \
+  --overwrite \
+  --strict-1to1
 ```
 
-Use `--no-embedded-restore` only when you want to force structure analysis on generic external PDFs.
-
-Strict 1:1 mode (fail fast if exact restore is not available):
+Force analysis mode for external PDFs:
 
 ```bash
-python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --strict-1to1
+python3 pdf_to_word.py \
+  "/path/to/input.pdf" \
+  -o "/path/to/output.docx" \
+  --overwrite \
+  --no-embedded-restore \
+  --no-sidecar-restore
 ```
-
-Explicit source DOCX for exact restore:
-
-```bash
-python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrite --source-docx "/path/to/original.docx"
-```
-
-## Web API
-
-### `POST /convert`
-
-Form-data:
-- `file`: `.doc` or `.docx`
-
-Response:
-- Binary PDF stream
-- Header `X-Diagnosis`: preprocessing/conversion diagnosis summary
 
 ## Screenshot
 
-Current placeholder (please replace with your real UI capture):
+Current placeholder path:
+- `docs/images/web-ui-screenshot.png`
 
-- Target path: `docs/images/web-ui-screenshot.png`
-- README reference:
-
+Markdown reference:
 ```markdown
 ![Web UI Screenshot](docs/images/web-ui-screenshot.png)
 ```
 
-This repository currently includes a `1x1` PNG placeholder at that path.
-Replace it with a real screenshot using the same file name:
+## Project Structure
 
-![Web UI Screenshot](docs/images/web-ui-screenshot.png)
-
-Recommended screenshot content:
-- Main upload area and status panel
-- Brand/header section
-- One successful conversion result state
-
-## Conversion Principles & Limits
-
-This project aims to maximize practical fidelity for common resume/form/table templates.
-
-Important:
-- True 1:1 pixel-perfect output requires Microsoft Word's own rendering engine.
-- LibreOffice/native HTML rendering are high-quality approximations, but not mathematically identical for every complex DOCX construct.
-- WPS-origin `textbox` and fallback VML structures are a known source of overlap issues; Web mode includes targeted structural mitigation.
-
-## Typical Commands
-
-See detailed commands in:
-- [docs/operations.md](docs/operations.md)
-
-## Development
-
-Run smoke tests:
-
-```bash
-npm test
+```text
+.
+├── converter_from_downloads.py   # Web Word->PDF
+├── pdf_to_word.py                # PDF->Word CLI
+├── bin/docx2pdf.js               # Node Word->PDF CLI
+├── lib/                          # Node conversion internals
+├── docs/                         # architecture / operations / checklist
+└── README.md / README.zh-CN.md
 ```
 
-Lint (if ESLint config is present):
+## Limits
 
-```bash
-npm run lint
-```
+- Strict 1:1 is guaranteed only when source DOCX can be restored (embedded/sidecar/explicit).
+- For generic external PDFs, output is best-effort structural reconstruction.
 
-## Open-Source Release Checklist
+## Docs
 
-Before publishing, verify:
-- package metadata (`author`, `repository.url`, keywords)
-- license owner name
-- screenshot and examples
-- docs accuracy
-
-Detailed list:
-- [docs/release-checklist.md](docs/release-checklist.md)
-
-## Contributing
-
-Please read:
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- [SECURITY.md](SECURITY.md)
+- [Operations](docs/operations.md)
+- [Architecture](docs/architecture.md)
+- [Release checklist](docs/release-checklist.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).

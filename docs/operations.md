@@ -1,136 +1,83 @@
-# Word-to-PDF Operations Guide
+# Word-to-PDF & PDF-to-Word Operations
 
-This file keeps practical commands for day-to-day conversion and debugging.
+Minimal, high-frequency commands.
 
-## 1. Start Web Converter
+## Setup
 
 ```bash
+npm install
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python3 converter_from_downloads.py
 ```
 
-Open:
-
-```text
-http://localhost:5000
-```
-
-## 2. Node CLI Basic Conversion
+## Word -> PDF (Web)
 
 ```bash
+python3 converter_from_downloads.py
+# open http://localhost:5000
+```
+
+## Word -> PDF (Node CLI)
+
+```bash
+# single file
 node bin/docx2pdf.js \
   "/absolute/path/input.docx" \
   -o "/absolute/path/output.pdf" \
   --overwrite
-```
 
-## 3. Node CLI Batch Conversion
-
-```bash
+# directory
 node bin/docx2pdf.js \
   "/absolute/path/docx-dir" \
   -o "/absolute/path/output-dir" \
   --overwrite
 ```
 
-## 4. Native Engine Mode (CLI)
+## PDF -> Word (Python CLI)
 
 ```bash
-node bin/docx2pdf.js \
-  "/absolute/path/input.docx" \
-  -o "/absolute/path/output.pdf" \
-  --engine native \
-  --native-layout structured \
-  --overwrite
-```
-
-## 5. LibreOffice Engine Mode (CLI)
-
-```bash
-node bin/docx2pdf.js \
-  "/absolute/path/input.docx" \
-  -o "/absolute/path/output.pdf" \
-  --engine libreoffice \
-  --overwrite
-```
-
-## 6. Smoke Test
-
-```bash
-npm test
-```
-
-## 7. PDF to Word (Python CLI)
-
-Single file:
-
-```bash
+# default (exact restore when possible, otherwise structured analysis)
 python3 pdf_to_word.py \
   "/absolute/path/input.pdf" \
   -o "/absolute/path/output.docx" \
   --overwrite
-```
 
-Batch directory:
-
-```bash
-python3 pdf_to_word.py \
-  "/absolute/path/pdf-dir" \
-  -o "/absolute/path/docx-dir" \
-  --overwrite
-```
-
-Force structure analysis (ignore embedded source DOCX):
-
-```bash
-python3 pdf_to_word.py \
-  "/absolute/path/input.pdf" \
-  -o "/absolute/path/output.docx" \
-  --overwrite \
-  --no-embedded-restore
-```
-
-Strict 1:1 mode (fail if exact restore is unavailable):
-
-```bash
+# strict 1:1 (fail if exact restore unavailable)
 python3 pdf_to_word.py \
   "/absolute/path/input.pdf" \
   -o "/absolute/path/output.docx" \
   --overwrite \
   --strict-1to1
-```
 
-Explicit source DOCX for exact restore:
-
-```bash
+# explicit source DOCX for exact restore
 python3 pdf_to_word.py \
   "/absolute/path/input.pdf" \
   -o "/absolute/path/output.docx" \
   --overwrite \
   --source-docx "/absolute/path/original.docx"
+
+# force structured analysis (no exact restore)
+python3 pdf_to_word.py \
+  "/absolute/path/input.pdf" \
+  -o "/absolute/path/output.docx" \
+  --overwrite \
+  --no-embedded-restore \
+  --no-sidecar-restore
 ```
 
-## 8. Troubleshooting
+## Quick Checks
 
-### Symptom: textbox overlap in output
+```bash
+npm test
+python3 -m py_compile converter_from_downloads.py pdf_to_word.py
+```
 
-- Prefer Web converter path first (`converter_from_downloads.py`)
-- Check diagnosis output (`X-Diagnosis` header)
-- Compare CLI result with Web result to isolate preprocessing differences
+## Troubleshooting
 
-### Symptom: `LibreOffice not found`
-
-- Install LibreOffice and verify path
-- Or pass explicit `--libreoffice <path>` in CLI mode
-
-### Symptom: CJK text width mismatch
-
-- Ensure proper Chinese fonts are installed
-- Prefer consistent font environment across machines
-
-### Symptom: native mode style differs from source
-
-- This is expected for some complex layouts
-- Try `--engine libreoffice` or Web mode for better fidelity
+- `LibreOffice not found`:
+  install LibreOffice, or pass `--libreoffice` in Node CLI mode.
+- PDF->Word not 1:1:
+  use `--strict-1to1` to detect missing exact-restore source path.
+- WPS overlap issues:
+  prefer Web converter (`converter_from_downloads.py`) for Word->PDF.
