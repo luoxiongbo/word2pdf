@@ -12,7 +12,8 @@ Pipeline:
 1. Receive uploaded `.doc/.docx`
 2. Preprocess XML for problematic textbox/frame patterns
 3. Convert using LibreOffice headless
-4. Return PDF stream and diagnosis header
+4. Embed source `.docx` into PDF attachment for exact round-trip restore
+5. Return PDF stream and diagnosis header
 
 Key traits:
 - Optimized for WPS-origin overlap scenarios
@@ -40,10 +41,11 @@ Entry:
 - `pdf_to_word.py`
 
 Pipeline:
-1. Read PDF pages with PyMuPDF (`fitz`)
-2. Extract text blocks in reading order
-3. Write paragraphs to `.docx` via `python-docx`
-4. Attempt to embed image blocks when decodable
+1. Try exact restore from embedded source `.docx` attachment
+2. If unavailable, read PDF pages with PyMuPDF (`fitz`)
+3. Analyze block typography/layout (heading/list/indent/spacing)
+4. Write structured paragraphs to `.docx` via `python-docx`
+5. Attempt to embed image blocks when decodable
 
 ## Design Notes
 

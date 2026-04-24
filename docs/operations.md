@@ -82,6 +82,16 @@ python3 pdf_to_word.py \
   --overwrite
 ```
 
+Force structure analysis (ignore embedded source DOCX):
+
+```bash
+python3 pdf_to_word.py \
+  "/absolute/path/input.pdf" \
+  -o "/absolute/path/output.docx" \
+  --overwrite \
+  --no-embedded-restore
+```
+
 ## 8. Troubleshooting
 
 ### Symptom: textbox overlap in output

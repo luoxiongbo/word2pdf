@@ -1,6 +1,6 @@
 """
 Word → PDF Converter — anchored text box column fix
-Requirements: pip3 install flask python-docx lxml
+Requirements: pip3 install flask python-docx lxml PyMuPDF
 Run:          python3 converter.py
 Open:         http://localhost:5000
 """
@@ -414,6 +414,66 @@ def _safe_header_value(text):
     return text.encode("ascii", "replace").decode("ascii")
 
 
+def _embed_source_docx_into_pdf(pdf_path: Path, original_docx_path: Path, report: list[str]):
+    """
+    Embed original DOCX into produced PDF for exact round-trip restore.
+    This lets pdf_to_word.py recover a near 1:1 source when possible.
+    """
+    if original_docx_path.suffix.lower() != ".docx":
+        report.append("Source embedding skipped: input is not .docx")
+        return
+
+    try:
+        import fitz  # PyMuPDF
+    except Exception:
+        report.append("Source embedding skipped: PyMuPDF not installed")
+        return
+
+    marker_name = "word_to_pdf_source_docx"
+    tmp_pdf = pdf_path.with_name(pdf_path.stem + ".embedded.tmp.pdf")
+
+    try:
+        source_bytes = original_docx_path.read_bytes()
+        pdf = fitz.open(str(pdf_path))
+        try:
+            names = list(pdf.embfile_names() or [])
+            for name in names:
+                info = pdf.embfile_info(name)
+                filename = (info.get("filename") or info.get("ufilename") or name or "").lower()
+                desc = (info.get("desc") or "").lower()
+                if (
+                    name == marker_name
+                    or ("source docx" in desc and filename.endswith(".docx"))
+                    or ("word-to-pdf" in desc and filename.endswith(".docx"))
+                ):
+                    try:
+                        pdf.embfile_del(name)
+                    except Exception:
+                        pass
+
+            original_name = original_docx_path.name
+            pdf.embfile_add(
+                marker_name,
+                source_bytes,
+                filename=original_name,
+                ufilename=original_name,
+                desc="Embedded source DOCX for exact round-trip (word-to-pdf)",
+            )
+            pdf.save(str(tmp_pdf), garbage=3, deflate=True)
+        finally:
+            pdf.close()
+
+        os.replace(tmp_pdf, pdf_path)
+        report.append("Embedded source DOCX for exact restore")
+    except Exception as e:
+        report.append(f"Source embedding failed: {e}")
+        try:
+            if tmp_pdf.exists():
+                tmp_pdf.unlink()
+        except Exception:
+            pass
+
+
 # ─── Flask routes ─────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -453,6 +513,8 @@ def convert():
         pdf = source.with_suffix(".pdf")
         if not pdf.exists():
             return jsonify({"error": "PDF not created. " + result.stdout, "report": report}), 500
+
+        _embed_source_docx_into_pdf(pdf, original, report)
 
         response = send_file(pdf, mimetype="application/pdf", as_attachment=True,
                              download_name=Path(file.filename).with_suffix(".pdf").name)

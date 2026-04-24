@@ -137,6 +137,18 @@ python3 pdf_to_word.py "/path/to/input.pdf" -o "/path/to/output.docx" --overwrit
 python3 pdf_to_word.py "/path/to/pdf-dir" -o "/path/to/docx-dir" --overwrite
 ```
 
+### 回转保真（Word -> PDF -> Word）
+
+对于由本项目 Web 转换器（`converter_from_downloads.py`）生成的 PDF，系统会把原始 `.docx` 嵌入到 PDF 附件中。
+
+因此 `pdf_to_word.py` 可以优先直接恢复源文档，获得接近 1:1 的版式保真：
+
+```bash
+python3 pdf_to_word.py "/path/to/your-generated.pdf" -o "/path/to/restored.docx" --overwrite
+```
+
+只有在你需要强制对外部 PDF 做结构分析时，才使用 `--no-embedded-restore`。
+
 ## Web API
 
 ### `POST /convert`
