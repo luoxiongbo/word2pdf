@@ -96,13 +96,7 @@ python3 pdf_to_word.py \
 
 ## 截图
 
-当前占位路径：
-- `docs/images/web-ui-screenshot.png`
-
-Markdown 引用：
-```markdown
-![Web UI Screenshot](docs/images/web-ui-screenshot.png)
-```
+![Web UI 截图](docs/images/web-ui-screenshot.png)
 
 ## 目录结构
 

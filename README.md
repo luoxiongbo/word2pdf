@@ -96,13 +96,7 @@ python3 pdf_to_word.py \
 
 ## Screenshot
 
-Current placeholder path:
-- `docs/images/web-ui-screenshot.png`
-
-Markdown reference:
-```markdown
 ![Web UI Screenshot](docs/images/web-ui-screenshot.png)
-```
 
 ## Project Structure
 
