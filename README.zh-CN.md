@@ -12,7 +12,7 @@
 
 ## 功能
 
-- 全本地处理，不上传云端
+- 本地优先，可自托管部署
 - Web 版 Word->PDF（包含 WPS 文本框重叠修复）
 - Node CLI Word->PDF（适合脚本/批处理/CI）
 - Python CLI PDF->Word（结构化分析）
@@ -64,6 +64,24 @@ python3 pdf_to_word.py \
   -o "/path/to/output.docx" \
   --overwrite
 ```
+
+## 低成本上线（推荐）
+
+推荐用 Cloud Run（按量计费，空闲自动缩到 0）。
+
+```bash
+# 1）安装并登录 gcloud
+gcloud auth login
+gcloud auth application-default login
+
+# 2）首次启用 API
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+# 3）部署
+PROJECT_ID="你的 GCP 项目 ID" ./scripts/deploy_cloud_run.sh
+```
+
+部署成功后会输出公网地址（`https://...run.app`），用户可直接访问。
 
 ## 精确 1:1 还原规则
 
@@ -118,6 +136,7 @@ python3 pdf_to_word.py \
 ## 相关文档
 
 - [操作手册](docs/operations.md)
+- [Cloud Run 部署](docs/deploy-cloud-run.md)
 - [架构说明](docs/architecture.md)
 - [发布检查](docs/release-checklist.md)
 - [贡献指南](CONTRIBUTING.md)

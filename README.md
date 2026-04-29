@@ -12,7 +12,7 @@ Repository: [https://github.com/luoxiongbo/word-to-pdf](https://github.com/luoxi
 
 ## Features
 
-- Fully local processing (no cloud upload)
+- Local-first and self-hostable
 - Web Word-to-PDF converter with WPS textbox overlap fixes
 - Node CLI Word-to-PDF converter for scripts/automation
 - Python CLI PDF-to-Word converter with structure analysis
@@ -64,6 +64,24 @@ python3 pdf_to_word.py \
   -o "/path/to/output.docx" \
   --overwrite
 ```
+
+## Deploy Online (Lowest Cost)
+
+Recommended: Cloud Run (pay-as-you-go, auto scale to zero).
+
+```bash
+# 1) Install and login
+gcloud auth login
+gcloud auth application-default login
+
+# 2) Enable required APIs (first time only)
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+# 3) Deploy
+PROJECT_ID="your-gcp-project-id" ./scripts/deploy_cloud_run.sh
+```
+
+After deploy, Cloud Run prints a public URL (`https://...run.app`) that users can open directly.
 
 ## Exact 1:1 Restore Rules
 
@@ -118,6 +136,7 @@ python3 pdf_to_word.py \
 ## Docs
 
 - [Operations](docs/operations.md)
+- [Cloud Run deployment](docs/deploy-cloud-run.md)
 - [Architecture](docs/architecture.md)
 - [Release checklist](docs/release-checklist.md)
 - [Contributing](CONTRIBUTING.md)

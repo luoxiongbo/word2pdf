@@ -9,8 +9,21 @@ import os, subprocess, tempfile, shutil, copy
 from pathlib import Path
 from flask import Flask, request, send_file, jsonify
 
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
+MAX_UPLOAD_MB = max(1, _env_int("MAX_UPLOAD_MB", 50))
+CONVERT_TIMEOUT_SECONDS = max(10, _env_int("CONVERT_TIMEOUT_SECONDS", 120))
+app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 
 LIBREOFFICE_PATHS = [
     "/Applications/LibreOffice.app/Contents/MacOS/soffice",
@@ -505,7 +518,7 @@ def convert():
 
         result = subprocess.run(
             [LIBREOFFICE, "--headless", "--convert-to", "pdf", "--outdir", tmp, str(source)],
-            capture_output=True, text=True, timeout=60
+            capture_output=True, text=True, timeout=CONVERT_TIMEOUT_SECONDS
         )
         if result.returncode != 0:
             return jsonify({"error": "LibreOffice error: " + result.stderr, "report": report}), 500
@@ -522,7 +535,7 @@ def convert():
         return response
 
     except subprocess.TimeoutExpired:
-        return jsonify({"error": "Conversion timed out (>60s)"}), 500
+        return jsonify({"error": f"Conversion timed out (>{CONVERT_TIMEOUT_SECONDS}s)"}), 500
     except Exception as e:
         import traceback
         return jsonify({"error": str(e), "report": [traceback.format_exc()]}), 500
@@ -594,7 +607,7 @@ HTML = """<!DOCTYPE html>
       <input type="file" id="fi" accept=".doc,.docx">
       <div class="ico">📄</div>
       <div class="dl-label">Drop your Word document here</div>
-      <div class="dh">.doc / .docx · processed locally</div>
+      <div class="dh">.doc / .docx · processed by this service</div>
     </div>
     <div class="st load" id="stLoad">
       <div class="st-row"><div class="spin"></div><div class="st-tx" id="ldTx">Preparing conversion…</div></div>
@@ -607,7 +620,7 @@ HTML = """<!DOCTYPE html>
       <div class="st-row"><span>⚠</span><div class="st-tx" id="erTx">Error</div></div>
       <div class="diag" id="diagEr"></div>
     </div>
-    <div class="privacy"><div class="dot"></div>Processed entirely on your Mac. No file is uploaded to external servers.</div>
+    <div class="privacy"><div class="dot"></div>Processed by this service and removed after conversion. No third-party API is used.</div>
   </div>
 </main>
 <script>

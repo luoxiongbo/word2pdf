@@ -73,6 +73,15 @@ npm test
 python3 -m py_compile converter_from_downloads.py pdf_to_word.py
 ```
 
+## Deploy (Cloud Run)
+
+```bash
+gcloud auth login
+gcloud auth application-default login
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+PROJECT_ID="your-gcp-project-id" ./scripts/deploy_cloud_run.sh
+```
+
 ## Troubleshooting
 
 - `LibreOffice not found`:

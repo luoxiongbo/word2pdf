@@ -8,6 +8,9 @@ This repo has three production paths:
 2. Node CLI Word->PDF (`bin/docx2pdf.js` + `lib/*`)
 3. Python CLI PDF->Word (`pdf_to_word.py`)
 
+Deployment option:
+- Cloud Run container (`Dockerfile`) for public online access
+
 ## 1) Web Word->PDF
 
 Pipeline:
