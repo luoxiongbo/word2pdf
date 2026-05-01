@@ -25,3 +25,6 @@ tmp/
 
 # Optional local test artifacts
 *.log
+
+# Local cloud CLI auth/config
+.gcloud/
